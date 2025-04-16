@@ -18,6 +18,7 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
   const [position, setPosition] = useState({x: 0, y: 0});
   const [expandedNodes, setExpandedNodes] = useState<string[]>([data.id || '']); // Track expanded nodes, root node expanded by default
   const mindMapRef = useRef<HTMLDivElement>(null);
+  const rootNodeRef = useRef<HTMLDivElement>(null); // Ref for the root node
   const [rootSize, setRootSize] = useState({width: 0, height: 0});
 
   // Generate unique IDs for nodes
@@ -36,11 +37,29 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
     assignIds(data);
   }, [data]);
 
+  // Effect to measure root node size and center it
+  useEffect(() => {
+    if (rootNodeRef.current && mindMapRef.current) {
+      const width = rootNodeRef.current.offsetWidth;
+      const height = rootNodeRef.current.offsetHeight;
+      setRootSize({width, height});
+
+      const mindMapWidth = mindMapRef.current.offsetWidth;
+      const mindMapHeight = mindMapRef.current.offsetHeight;
+
+      // Calculate the center position
+      const centerX = (mindMapWidth - width) / 2;
+      const centerY = (mindMapHeight - height) / 2;
+
+      setPosition({x: centerX, y: centerY});
+    }
+  }, []);
+
 
   // Zoom functionality
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
-    const zoomSpeed = 0.00001;
+    const zoomSpeed = 0.000005;
     const newScale = Math.max(0.2, scale - event.deltaY * zoomSpeed); // Prevent scale from going too small
     setScale(newScale);
   };
@@ -124,6 +143,7 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
         transition={{ duration: 0.3, ease: "easeInOut" }}
       >
         <motion.div
+          ref={level === 0 ? rootNodeRef : null} // Add ref to the root node
           style={nodeStyle}
           onClick={() => hasChildren ? toggleNode(node.id!) : null} // Only toggle if it has children
         >
