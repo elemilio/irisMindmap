@@ -1,4 +1,3 @@
-
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
@@ -24,7 +23,7 @@ const MindMap: React.FC<MindMapProps> = ({ data }) => {
   // Zoom functionality
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
-    const zoomSpeed = 0.05;
+    const zoomSpeed = 0.01; // Reduced zoom speed
     const newScale = Math.max(0.2, scale - event.deltaY * zoomSpeed); // Prevent scale from going too small
     setScale(newScale);
   };
@@ -118,3 +117,4 @@ const MindMap: React.FC<MindMapProps> = ({ data }) => {
 };
 
 export default MindMap;
+
