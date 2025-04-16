@@ -3,7 +3,7 @@ import MindMap from '@/components/MindMap';
 
 export default function Home() {
   const mindMapData = {
-    name: 'MindMapFlow',
+    name: 'Integracions d\'IRIS',
     children: [
       {
         name: 'PRÒPIES',
@@ -68,3 +68,4 @@ export default function Home() {
     </div>
   );
 }
+
