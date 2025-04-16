@@ -6,6 +6,7 @@ interface MindMapNode {
   name: string;
   children?: MindMapNode[];
   id?: string; // Unique identifier for each node
+  category?: string; // Category to define color
 }
 
 interface MindMapProps {
@@ -20,17 +21,41 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
   const rootNodeRef = useRef<HTMLDivElement>(null); // Ref for the root node
   const [rootSize, setRootSize] = useState({width: 0, height: 0});
   const contentRef = useRef<HTMLDivElement>(null); // Ref for the content div
+  const [activeNode, setActiveNode] = useState<string | null>(null); // Track active node for lighting effect
+
+  // Colors for different categories
+  const categoryColors = {
+    'PROPIES': 'hsl(var(--proprieties-color))', // Violet
+    'INTERNES': 'hsl(var(--internes-color))', // Green
+    'PUBLIQUES': 'hsl(var(--publiques-color))', // Teal
+    'EXTERNES': 'hsl(var(--externes-color))', // Orange
+  };
+
+  const branchColors = {
+    'SPA (Backoffice)': 'hsl(var(--violet-300))',
+    'Atenció en linia (Web Pública)': 'hsl(var(--violet-400))',
+    'Iris Mòbil (PWA pels operaris)': 'hsl(var(--violet-500))',
+    'DIRECTES / API (comunicació continua)': 'hsl(var(--green-300))',
+    'EXPORTACIONS': 'hsl(var(--green-400))',
+    'Butxaca (incidencies a la via pública)': 'hsl(var(--teal-300))',
+    'Portal de Tràmits': 'hsl(var(--teal-400))',
+    'Quioscs a les OACs': 'hsl(var(--teal-500))',
+    'OpenData': 'hsl(var(--teal-600))',
+    'Webs Informatives (Drupal)': 'hsl(var(--teal-700))',
+  };
+
   // Generate unique IDs for nodes
   const generateNodeId = (name: string): string => {
     return name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + Math.random().toString(36).substring(2, 9);
   };
 
-  // Initialize node IDs
+  // Initialize node IDs and categories
   useEffect(() => {
-    const assignIds = (node: MindMapNode) => {
+    const assignIds = (node: MindMapNode, category?: string) => {
       node.id = generateNodeId(node.name);
+      node.category = category;
       if (node.children) {
-        node.children.forEach(child => assignIds(child));
+        node.children.forEach(child => assignIds(child, node.name));
       }
     };
     assignIds(data);
@@ -57,8 +82,8 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
   // Zoom functionality
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
-    const zoomSpeed = 0.0001;
-    const newScale = Math.max(0.2, scale - event.deltaY * zoomSpeed); // Prevent scale from going too small
+    const zoomSpeed = 0.0005;
+    const newScale = Math.max(0.5, scale - event.deltaY * zoomSpeed); // Prevent scale from going too small
     setScale(newScale);
   };
 
@@ -94,7 +119,7 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
     });
   };
 
-  const renderNode = (node: MindMapNode, level: number = 0): JSX.Element => {
+  const renderNode = (node: MindMapNode, level: number = 0): JSX.Element | null => {
     if (!node.id) {
       // If the node doesn't have an ID, it's not valid, so return null
       return null;
@@ -102,17 +127,29 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
 
     const isExpanded = expandedNodes.includes(node.id);
     const hasChildren = node.children && node.children.length > 0;
+    const categoryColorKey = node.category as keyof typeof categoryColors;
+    const branchColorKey = node.name as keyof typeof branchColors;
+
+    // Safely access categoryColors and branchColors
+    const backgroundColor = level === 0 ? 'hsl(var(--primary))' :
+      (categoryColorKey && categoryColors[categoryColorKey]) ||
+      (branchColorKey && branchColors[branchColorKey]) ||
+      'hsl(var(--secondary))';
+
+    const textColor = 'hsl(var(--primary-foreground))';
+    const isRoot = level === 0;
 
     const nodeStyle = {
       padding: '0.5rem 1rem',
       margin: '0.5rem',
       border: '1px solid',
       borderRadius: '0.5rem',
-      backgroundColor: 'hsl(var(--secondary))',
-      color: 'hsl(var(--foreground))',
-      transition: 'background-color 0.3s, color 0.3s',
+      backgroundColor: backgroundColor,
+      color: textColor,
+      transition: 'background-color 0.3s, color 0.3s, box-shadow 0.3s',
       cursor: hasChildren ? 'pointer' : 'default', // Only show pointer if expandable
       display: 'inline-block',
+      boxShadow: activeNode === node.id ? `0 0 10px ${textColor}` : 'none', // Add glowing effect if active
     };
 
     const containerStyle = {
@@ -128,6 +165,14 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
       transition: 'opacity 0.3s ease-in-out, height 0.3s ease-in-out',
     };
 
+    const handleClick = () => {
+      if (hasChildren) {
+        toggleNode(node.id!);
+      }
+      setActiveNode(node.id!); // Set active node on click
+      setTimeout(() => setActiveNode(null), 300); // Clear active node after 300ms
+    };
+
     return (
       <div
         key={node.id}
@@ -136,7 +181,7 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
         <div
           ref={level === 0 ? rootNodeRef : null} // Add ref to the root node
           style={nodeStyle}
-          onClick={() => hasChildren ? toggleNode(node.id!) : null} // Only toggle if it has children
+          onClick={handleClick} // Only toggle if it has children
         >
           {node.name}
         </div>
@@ -189,9 +234,9 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
       ref={mindMapRef}
       className="mind-map relative overflow-hidden rounded-lg shadow-md"
       style={{
-        width: '80vw',
-        height: '80vh',
-        backgroundColor: 'hsl(var(--card))',
+        width: '100vw',
+        height: '100vh',
+        backgroundColor: 'hsl(var(--background))',
         userSelect: 'none', // Prevent text selection
       }}
       onWheel={handleWheel}

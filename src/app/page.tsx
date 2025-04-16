@@ -63,9 +63,8 @@ export default function Home() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-secondary">
+    <div className="flex items-center justify-center h-screen bg-background">
       <MindMap data={mindMapData} />
     </div>
   );
 }
-
