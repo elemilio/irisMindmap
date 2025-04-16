@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useState, useRef, useEffect} from 'react';
-import {useTransform, useAnimate, motion} from 'framer-motion';
+import {motion} from 'framer-motion';
 
 interface MindMapNode {
   name: string;
@@ -16,9 +16,8 @@ interface MindMapProps {
 const MindMap: React.FC<MindMapProps> = ({data}) => {
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({x: 0, y: 0});
-  const [expandedNodes, setExpandedNodes] = useState<string[]>([]); // Track expanded nodes
+  const [expandedNodes, setExpandedNodes] = useState<string[]>([data.id || '']); // Track expanded nodes, root node expanded by default
   const mindMapRef = useRef<HTMLDivElement>(null);
-  const [scope, animate] = useAnimate();
   const [rootSize, setRootSize] = useState({width: 0, height: 0});
 
   // Generate unique IDs for nodes
@@ -41,7 +40,7 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
   // Zoom functionality
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
-    const zoomSpeed = 0.0001;
+    const zoomSpeed = 0.00001;
     const newScale = Math.max(0.2, scale - event.deltaY * zoomSpeed); // Prevent scale from going too small
     setScale(newScale);
   };
@@ -78,7 +77,6 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
     });
   };
 
-
   const renderNode = (node: MindMapNode, level: number = 0): JSX.Element => {
     if (!node.id) {
       // If the node doesn't have an ID, it's not valid, so return null
@@ -86,6 +84,8 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
     }
 
     const isExpanded = expandedNodes.includes(node.id);
+    const hasChildren = node.children && node.children.length > 0;
+
     const nodeStyle = {
       padding: '0.5rem 1rem',
       margin: '0.5rem',
@@ -94,33 +94,50 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
       backgroundColor: 'hsl(var(--secondary))',
       color: 'hsl(var(--foreground))',
       transition: 'background-color 0.3s, color 0.3s',
-      cursor: 'pointer',
-      display: 'inline-block', // Ensure inline display
+      cursor: hasChildren ? 'pointer' : 'default', // Only show pointer if expandable
+      display: 'inline-block',
     };
 
     const containerStyle = {
       marginLeft: `${level * 2}rem`,
-      textAlign: 'left', // Align text to the left
+      textAlign: 'left',
     };
 
-    // Only render children if the node is expanded
-    const renderChildren = isExpanded && node.children;
+    const childrenVariants = {
+      open: { opacity: 1, height: 'auto', display: 'block' },
+      closed: { opacity: 0, height: 0, display: 'none' },
+    };
+
+    const nodeVariants = {
+      hidden: { opacity: 0, scale: 0.8 },
+      visible: { opacity: 1, scale: 1 },
+    };
 
     return (
       <motion.div
         key={node.id}
         layout
         style={containerStyle}
+        variants={nodeVariants}
+        initial="hidden"
+        animate="visible"
+        transition={{ duration: 0.3, ease: "easeInOut" }}
       >
-        <div
+        <motion.div
           style={nodeStyle}
-          onClick={() => toggleNode(node.id!)} // Use non-null assertion here
+          onClick={() => hasChildren ? toggleNode(node.id!) : null} // Only toggle if it has children
         >
           {node.name}
-        </div>
-        {renderChildren && (
-          <motion.div layout>
-            {node.children!.map((child, index) => (
+        </motion.div>
+        {hasChildren && (
+          <motion.div
+            layout
+            variants={childrenVariants}
+            initial="closed"
+            animate={isExpanded ? "open" : "closed"}
+            transition={{ duration: 0.3, ease: "easeInOut" }}
+          >
+            {isExpanded && node.children!.map((child, index) => (
               <React.Fragment key={index}>
                 {renderNode(child, level + 1)}
               </React.Fragment>
@@ -130,7 +147,6 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
       </motion.div>
     );
   };
-
 
   return (
     <div
