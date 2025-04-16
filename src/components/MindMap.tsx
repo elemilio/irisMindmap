@@ -59,7 +59,7 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
   // Zoom functionality
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
-    const zoomSpeed = 0.000005;
+    const zoomSpeed = 0.000001;
     const newScale = Math.max(0.2, scale - event.deltaY * zoomSpeed); // Prevent scale from going too small
     setScale(newScale);
   };
@@ -140,7 +140,7 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
         variants={nodeVariants}
         initial="hidden"
         animate="visible"
-        transition={{ duration: 0.3, ease: "easeInOut" }}
+        transition={{ duration: 0.5, ease: "easeOut" }}
       >
         <motion.div
           ref={level === 0 ? rootNodeRef : null} // Add ref to the root node
@@ -155,7 +155,7 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
             variants={childrenVariants}
             initial="closed"
             animate={isExpanded ? "open" : "closed"}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            transition={{ duration: 0.4, ease: "easeInOut" }}
           >
             {isExpanded && node.children!.map((child, index) => (
               <React.Fragment key={index}>
