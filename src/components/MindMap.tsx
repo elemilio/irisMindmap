@@ -1,6 +1,6 @@
 'use client';
 
-import React, {useState, useRef, useEffect} from 'react';
+import React, {useState, useRef, useEffect, useCallback} from 'react';
 
 interface MindMapNode {
   name: string;
@@ -19,7 +19,7 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
   const mindMapRef = useRef<HTMLDivElement>(null);
   const rootNodeRef = useRef<HTMLDivElement>(null); // Ref for the root node
   const [rootSize, setRootSize] = useState({width: 0, height: 0});
-
+  const contentRef = useRef<HTMLDivElement>(null); // Ref for the content div
   // Generate unique IDs for nodes
   const generateNodeId = (name: string): string => {
     return name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + Math.random().toString(36).substring(2, 9);
@@ -54,11 +54,10 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
     }
   }, []);
 
-
   // Zoom functionality
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
-    const zoomSpeed = 0.00001;
+    const zoomSpeed = 0.0005;
     const newScale = Math.max(0.2, scale - event.deltaY * zoomSpeed); // Prevent scale from going too small
     setScale(newScale);
   };
@@ -156,6 +155,35 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
     );
   };
 
+  // Function to adapt zoom to content
+  const zoomToFit = useCallback(() => {
+    if (!mindMapRef.current || !contentRef.current) {
+      return;
+    }
+
+    const mindMapWidth = mindMapRef.current.offsetWidth;
+    const mindMapHeight = mindMapRef.current.offsetHeight;
+    const contentWidth = contentRef.current.offsetWidth;
+    const contentHeight = contentRef.current.offsetHeight;
+
+    const scaleX = mindMapWidth / contentWidth;
+    const scaleY = mindMapHeight / contentHeight;
+    const newScale = Math.min(scaleX, scaleY, 1); // Limit to max scale of 1
+
+    setScale(newScale);
+
+    // Center the content
+    const newPositionX = (mindMapWidth - contentWidth * newScale) / 2;
+    const newPositionY = (mindMapHeight - contentHeight * newScale) / 2;
+
+    setPosition({x: newPositionX, y: newPositionY});
+  }, []);
+
+  // Call zoomToFit on initial load and whenever expandedNodes change
+  useEffect(() => {
+    zoomToFit();
+  }, [zoomToFit, expandedNodes]);
+
   return (
     <div
       ref={mindMapRef}
@@ -169,6 +197,7 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
       onMouseDown={handleMouseDown}
     >
       <div
+        ref={contentRef}
         style={{
           transform: `translate(${position.x}px, ${position.y}px) scale(${scale})`,
           transformOrigin: 'top left',
