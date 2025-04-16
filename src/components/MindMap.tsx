@@ -1,7 +1,6 @@
 'use client';
 
 import React, {useState, useRef, useEffect} from 'react';
-import {motion} from 'framer-motion';
 
 interface MindMapNode {
   name: string;
@@ -59,7 +58,7 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
   // Zoom functionality
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
-    const zoomSpeed = 0.000001;
+    const zoomSpeed = 0.00001;
     const newScale = Math.max(0.2, scale - event.deltaY * zoomSpeed); // Prevent scale from going too small
     setScale(newScale);
   };
@@ -122,49 +121,38 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
       textAlign: 'left',
     };
 
-    const childrenVariants = {
-      open: { opacity: 1, height: 'auto', display: 'block' },
-      closed: { opacity: 0, height: 0, display: 'none' },
-    };
-
-    const nodeVariants = {
-      hidden: { opacity: 0, scale: 0.8 },
-      visible: { opacity: 1, scale: 1 },
+    const childrenStyle = {
+      opacity: isExpanded ? 1 : 0,
+      height: isExpanded ? 'auto' : 0,
+      display: isExpanded ? 'block' : 'none',
+      overflow: 'hidden',
+      transition: 'opacity 0.3s ease-in-out, height 0.3s ease-in-out',
     };
 
     return (
-      <motion.div
+      <div
         key={node.id}
-        layout
         style={containerStyle}
-        variants={nodeVariants}
-        initial="hidden"
-        animate="visible"
-        transition={{ duration: 0.5, ease: "easeOut" }}
       >
-        <motion.div
+        <div
           ref={level === 0 ? rootNodeRef : null} // Add ref to the root node
           style={nodeStyle}
           onClick={() => hasChildren ? toggleNode(node.id!) : null} // Only toggle if it has children
         >
           {node.name}
-        </motion.div>
+        </div>
         {hasChildren && (
-          <motion.div
-            layout
-            variants={childrenVariants}
-            initial="closed"
-            animate={isExpanded ? "open" : "closed"}
-            transition={{ duration: 0.4, ease: "easeInOut" }}
+          <div
+            style={childrenStyle}
           >
-            {isExpanded && node.children!.map((child, index) => (
+            {node.children.map((child, index) => (
               <React.Fragment key={index}>
                 {renderNode(child, level + 1)}
               </React.Fragment>
             ))}
-          </motion.div>
+          </div>
         )}
-      </motion.div>
+      </div>
     );
   };
 
