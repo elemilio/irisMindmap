@@ -1,7 +1,7 @@
 'use client';
 
 import React, {useState, useRef, useEffect} from 'react';
-import {useTransform, useAnimate} from 'framer-motion';
+import {useTransform, useAnimate, motion} from 'framer-motion';
 
 interface MindMapNode {
   name: string;
@@ -41,7 +41,7 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
   // Zoom functionality
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
-    const zoomSpeed = 0.0005; // Reduced zoom speed even further
+    const zoomSpeed = 0.0001;
     const newScale = Math.max(0.2, scale - event.deltaY * zoomSpeed); // Prevent scale from going too small
     setScale(newScale);
   };
@@ -107,7 +107,11 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
     const renderChildren = isExpanded && node.children;
 
     return (
-      <div key={node.id} style={containerStyle}>
+      <motion.div
+        key={node.id}
+        layout
+        style={containerStyle}
+      >
         <div
           style={nodeStyle}
           onClick={() => toggleNode(node.id!)} // Use non-null assertion here
@@ -115,15 +119,15 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
           {node.name}
         </div>
         {renderChildren && (
-          <div>
+          <motion.div layout>
             {node.children!.map((child, index) => (
               <React.Fragment key={index}>
                 {renderNode(child, level + 1)}
               </React.Fragment>
             ))}
-          </div>
+          </motion.div>
         )}
-      </div>
+      </motion.div>
     );
   };
 
