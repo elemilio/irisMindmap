@@ -57,7 +57,7 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
   // Zoom functionality
   const handleWheel = (event: React.WheelEvent<HTMLDivElement>) => {
     event.preventDefault();
-    const zoomSpeed = 0.0005;
+    const zoomSpeed = 0.0001;
     const newScale = Math.max(0.2, scale - event.deltaY * zoomSpeed); // Prevent scale from going too small
     setScale(newScale);
   };
@@ -192,6 +192,7 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
         width: '80vw',
         height: '80vh',
         backgroundColor: 'hsl(var(--card))',
+        userSelect: 'none', // Prevent text selection
       }}
       onWheel={handleWheel}
       onMouseDown={handleMouseDown}
