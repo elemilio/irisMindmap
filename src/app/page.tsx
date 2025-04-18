@@ -1,4 +1,3 @@
-
 import MindMap from '@/components/MindMap';
 
 export default function Home() {
@@ -8,9 +7,9 @@ export default function Home() {
       {
         name: 'PRÒPIES',
         children: [
-          { name: 'SPA (Backoffice)' },
-          { name: 'Atenció en linia (Web Pública)' },
-          { name: 'Iris Mòbil (PWA pels operaris)' },
+          { name: 'SPA: Backoffice d\'IRIS' },
+          { name: 'WEB-ATE: Web Atenció en linia' },
+          { name: 'PWA: Iris Mòbil' },
         ],
       },
       {
@@ -63,7 +62,7 @@ export default function Home() {
   };
 
   return (
-    <div className="flex items-center justify-center h-screen bg-background">
+    <div className="dark flex items-center justify-center h-screen bg-background">
       <MindMap data={mindMapData} />
     </div>
   );
