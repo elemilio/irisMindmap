@@ -25,24 +25,13 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
 
   // Colors for different categories
   const categoryColors = {
-    'PROPIES': 'hsl(var(--proprieties-color))', // Violet
+    'PROPIES': 'hsl(var(--propies-color))', // Violet
     'INTERNES': 'hsl(var(--internes-color))', // Green
     'PUBLIQUES': 'hsl(var(--publiques-color))', // Teal
     'EXTERNES': 'hsl(var(--externes-color))', // Orange
+    'NOVETATS': 'hsl(var(--novetats-color))', // Blue
   };
 
-  const branchColors = {
-    'SPA (Backoffice)': 'hsl(var(--violet-300))',
-    'Atenció en linia (Web Pública)': 'hsl(var(--violet-400))',
-    'Iris Mòbil (PWA pels operaris)': 'hsl(var(--violet-500))',
-    'DIRECTES / API (comunicació continua)': 'hsl(var(--green-300))',
-    'EXPORTACIONS': 'hsl(var(--green-400))',
-    'Butxaca (incidencies a la via pública)': 'hsl(var(--teal-300))',
-    'Portal de Tràmits': 'hsl(var(--teal-400))',
-    'Quioscs a les OACs': 'hsl(var(--teal-500))',
-    'OpenData': 'hsl(var(--teal-600))',
-    'Webs Informatives (Drupal)': 'hsl(var(--teal-700))',
-  };
 
   // Generate unique IDs for nodes
   const generateNodeId = (name: string): string => {
@@ -51,13 +40,20 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
 
   // Initialize node IDs and categories
   useEffect(() => {
-    const assignIds = (node: MindMapNode, category?: string) => {
+    const assignIds = (node: MindMapNode, parentCategory?: string) => {
+      // Genera un ID único para el nodo
       node.id = generateNodeId(node.name);
-      node.category = category;
+  
+      // Si el nodo no tiene categoría, asigna la categoría del padre
+      node.category = node.category || parentCategory;
+  
+      // Si el nodo tiene hijos, aplica la misma lógica recursivamente
       if (node.children) {
-        node.children.forEach(child => assignIds(child, node.name));
+        node.children.forEach(child => assignIds(child, node.category));
       }
     };
+  
+    // Llama a la función con el nodo raíz
     assignIds(data);
   }, [data]);
 
@@ -121,42 +117,40 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
 
   const renderNode = (node: MindMapNode, level: number = 0): JSX.Element | null => {
     if (!node.id) {
-      // If the node doesn't have an ID, it's not valid, so return null
-      return null;
+      return null; // Si el nodo no tiene ID, no es válido
     }
-
+  
     const isExpanded = expandedNodes.includes(node.id);
     const hasChildren = node.children && node.children.length > 0;
+  
+    // Determina el color de fondo según la categoría o el nombre
     const categoryColorKey = node.category as keyof typeof categoryColors;
-    const branchColorKey = node.name as keyof typeof branchColors;
-
-    // Safely access categoryColors and branchColors
-    const backgroundColor = level === 0 ? 'hsl(var(--primary))' :
-      (categoryColorKey && categoryColors[categoryColorKey]) ||
-      (branchColorKey && branchColors[branchColorKey]) ||
-      'hsl(var(--secondary))';
-
+  
+    const backgroundColor = level === 0
+      ? 'hsl(var(--primary))'
+      : (categoryColorKey && categoryColors[categoryColorKey]) ||
+        'hsl(var(--secondary))';
+  
+    console.log('Node:', node.name, 'Category:', node.category, 'Background:', backgroundColor);
     const textColor = 'hsl(var(--primary-foreground))';
-    const isRoot = level === 0;
-
+  
     const nodeStyle = {
       padding: '0.5rem 1rem',
       margin: '0.5rem',
       border: '1px solid',
-      borderRadius: '0.5rem',
       backgroundColor: backgroundColor,
       color: textColor,
       transition: 'background-color 0.3s, color 0.3s, box-shadow 0.3s',
-      cursor: hasChildren ? 'pointer' : 'default', // Only show pointer if expandable
+      cursor: hasChildren ? 'pointer' : 'default',
       display: 'inline-block',
-      boxShadow: activeNode === node.id ? `0 0 10px ${textColor}` : 'none', // Add glowing effect if active
+      boxShadow: activeNode === node.id ? `0 0 10px ${textColor}` : 'none',
     };
-
+  
     const containerStyle = {
       marginLeft: `${level * 2}rem`,
       textAlign: 'left',
     };
-
+  
     const childrenStyle = {
       opacity: isExpanded ? 1 : 0,
       height: isExpanded ? 'auto' : 0,
@@ -164,31 +158,26 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
       overflow: 'hidden',
       transition: 'opacity 0.3s ease-in-out, height 0.3s ease-in-out',
     };
-
+  
     const handleClick = () => {
       if (hasChildren) {
         toggleNode(node.id!);
       }
-      setActiveNode(node.id!); // Set active node on click
-      setTimeout(() => setActiveNode(null), 300); // Clear active node after 300ms
+      setActiveNode(node.id!); // Marca el nodo como activo al hacer clic
+      setTimeout(() => setActiveNode(null), 300); // Limpia el nodo activo después de 300ms
     };
-
+  
     return (
-      <div
-        key={node.id}
-        style={containerStyle}
-      >
+      <div key={node.id} style={containerStyle}>
         <div
-          ref={level === 0 ? rootNodeRef : null} // Add ref to the root node
+          ref={level === 0 ? rootNodeRef : null} // Agrega referencia al nodo raíz
           style={nodeStyle}
-          onClick={handleClick} // Only toggle if it has children
+          onClick={handleClick}
         >
           {node.name}
         </div>
         {hasChildren && (
-          <div
-            style={childrenStyle}
-          >
+          <div style={childrenStyle}>
             {node.children.map((child, index) => (
               <React.Fragment key={index}>
                 {renderNode(child, level + 1)}
@@ -254,6 +243,12 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
       </div>
     </div>
   );
+  return (
+    <div>
+      {data.children?.map((child) => renderNode(child, 0))}
+    </div>
+  );
 };
+
 
 export default MindMap;

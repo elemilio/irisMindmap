@@ -1,4 +1,4 @@
-# **App Name**: MindMapFlow
+# **App Name**: Interacions a IRIS
 
 ## Core Features:
 
