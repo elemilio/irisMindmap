@@ -42,7 +42,7 @@ export default function Sidebar() {
           className="flex items-center w-full px-4 py-3 transition bg-gradient-to-r hover:from-[#6a1b9a] hover:to-[#4a148c] hover:text-white"
         >
           <span className="material-icons mr-3">home</span>
-          INICI
+          HOLA
         </Link>
       </li>
       <li>
@@ -60,7 +60,7 @@ export default function Sidebar() {
           className="flex items-center w-full px-4 py-3 transition bg-gradient-to-r hover:from-[#6a1b9a] hover:to-[#4a148c] hover:text-white"
         >
           <span className="material-icons mr-3">warning</span>
-          COMPLEXITAT
+          REPTES
         </Link>
       </li>
       <li>

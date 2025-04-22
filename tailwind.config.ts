@@ -9,6 +9,17 @@ export default {
   ],
   theme: {
   	extend: {
+		fontSize: {
+			xs: '1rem', // Originalmente 0.75rem, aumentado en 33%
+			sm: '1.1667rem', // Originalmente 0.875rem
+			base: '1.3333rem', // Originalmente 1rem
+			lg: '1.5rem', // Originalmente 1.125rem
+			xl: '2rem', // Originalmente 1.5rem
+			'2xl': '2.6667rem', // Originalmente 2rem
+			'3xl': '3.3333rem', // Originalmente 2.5rem
+			'4xl': '4.6667rem', // Originalmente 3.5rem
+			'5xl': '6rem', // Originalmente 4.5rem
+		  },
   		colors: {
   			background: 'hsl(var(--background))',
   			foreground: 'hsl(var(--foreground))',

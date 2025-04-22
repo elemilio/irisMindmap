@@ -3,7 +3,7 @@
 import React, {useState, useRef, useEffect, useCallback} from 'react';
 
 interface MindMapNode {
-  name: string;
+  name?: string;
   children?: MindMapNode[];
   id?: string; // Unique identifier for each node
   category?: string; // Category to define color
@@ -32,9 +32,10 @@ const MindMap: React.FC<MindMapProps> = ({data}) => {
     'NOVETATS': 'hsl(var(--novetats-color))', // Blue
   };
 
-
-  // Generate unique IDs for nodes
-  const generateNodeId = (name: string): string => {
+  const generateNodeId = (name: string | undefined): string => {
+    if (!name) {
+      return `node_${Math.random().toString(36).substring(2, 9)}`; // Genera un ID único si el nombre no está definido
+    }
     return name.replace(/[^a-zA-Z0-9]/g, '_') + '_' + Math.random().toString(36).substring(2, 9);
   };
 

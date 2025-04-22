@@ -7,7 +7,7 @@ export default function Complexity() {
       {/* Contenedor principal con márgenes para el navbar y el sidebar */}
       <div className="flex-grow ml-64 pt-16 p-8 bg-gray-100 min-h-screen">
         <br></br>
-        <h1 className="text-4xl font-bold text-purple-700 mb-8">COMPLEXITAT</h1>
+        <h1 className="text-4xl font-bold text-purple-700 mb-8">REPTES</h1>
         <div className="bg-white shadow-md rounded-lg p-6 mb-8">
           <h2 className="flex items-center text-lg font-semibold text-purple-700 mb-4">
             <span className="material-icons mr-1">format_list_numbered</span>
